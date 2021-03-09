@@ -1,0 +1,36 @@
+{
+  "name": "mocha-chai-sinon-test",
+  "version": "1.0.0",
+  "description": "Testing out unit testing using mocha, chai, and sinon",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kazemiai/Mocha-Chai-Sinon-Test.git"
+  },
+  "scripts": {
+    "test": "mocha './src/**/*.test.js'",
+    "start": "node src/app.js"
+  },
+  "keywords": [
+    "mocha",
+    "chai"
+  ],
+  "author": "Sara Kazemi",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.4.0",
+    "morgan": "^1.9.1",
+    "pg": "^7.12.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.5.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.2",
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.2",
+    "faker": "^5.4.0"
+  }
+}
