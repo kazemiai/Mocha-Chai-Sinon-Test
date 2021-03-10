@@ -276,7 +276,7 @@ app.listen(PORT, () => {
 
 We will keep our unit tests organized away from our application code. Create a new folder named `test` in the `src` folder. We will write tests for our User repository, controller, and service. 
 
-Note: We are not testing our model, so entities are stubbed out using `faker` and Model methods are stubbed out using `sinon`. The `describe()` and `it()` methods come from `mocha`'s behavior-driven development (BDD) interface while the `expect()` method comes from the `chai` library and is used to write the actual assertions of these unit test cases for the UserRepository's `create()`  and `getUser()` methods.
+Note: We are not testing our model, so entities are stubbed out using values from [`faker`](https://www.npmjs.com/package/faker) and Model methods are [stubbed out using `sinon`](https://sinonjs.org/releases/v9.2.4/stubs/). The `describe()` and `it()` methods come from `mocha`'s [behavior-driven development (BDD) interface](https://mochajs.org/#interfaces) while the `expect()` method comes from the `chai` library and is used to write the actual [BDD assertions](https://www.chaijs.com/api/bdd/) of these unit test cases for the UserRepository's `create()`  and `getUser()` methods.
 
 #### `user.repository.test.js`
 ```
@@ -446,7 +446,7 @@ describe("UserController", function() {
 
   #### `user.service.test.js`
   ```
-  const chai = require("chai");
+const chai = require("chai");
 const sinon = require("sinon");
 const UserRepository = require("../user/user.repository");
 const expect = chai.expect;
