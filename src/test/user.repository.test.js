@@ -4,7 +4,7 @@ const sinon = require("sinon");
 const expect = chai.expect;
 const faker = require("faker");
 const { UserModel } = require("../database");
-const UserRepository = require("./user.repository");
+const UserRepository = require("../user/user.repository");
 
 
  // We use faker for the test fixtures

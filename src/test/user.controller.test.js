@@ -4,9 +4,9 @@ const chai = require("chai");
 const sinon = require("sinon");
 const expect = chai.expect;
 const faker = require("faker");
-const UserController = require("./user.controller");
-const UserService = require("./user.service");
-const UserRepository = require("./user.repository");
+const UserController = require("../user/user.controller");
+const UserService = require("../user/user.service");
+const UserRepository = require("../user/user.repository");
 
 // In the first three it blocks, we are testing that a user will not be created when one or both of the required parameters (email and name) are not provided. 
 // Notice that we are stubbing the res.status and spying on res.json

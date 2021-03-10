@@ -1,9 +1,9 @@
 const chai = require("chai");
 const sinon = require("sinon");
-const UserRepository = require("./user.repository");
+const UserRepository = require("../user/user.repository");
 const expect = chai.expect;
 const faker = require("faker");
-const UserService = require("./user.service");
+const UserService = require("../user/user.service");
 
 // test the UserService class methods 
 
