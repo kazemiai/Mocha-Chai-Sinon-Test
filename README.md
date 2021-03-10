@@ -335,3 +335,210 @@ describe("UserRepository", function() {
 ```
 
 Note: Model entities are stubbed out using `faker` and Model methods are stubbed out using `sinon`. `chai`'s `expect` method is used to write the actual assertions of these unit test cases for the UserRepository's `create`  and `getUser` methods.
+
+#### `user.controller.test.js`
+```
+const chai = require("chai");
+const sinon = require("sinon");
+const expect = chai.expect;
+const faker = require("faker");
+const UserController = require("../user/user.controller");
+const UserService = require("../user/user.service");
+const UserRepository = require("../user/user.repository");
+
+// In the first three it blocks, we are testing that a user will not be created when one or both of the required parameters (email and name) are not provided. 
+// Notice that we are stubbing the res.status and spying on res.json
+
+describe("UserController", function() {
+    describe("register", function() {
+      let status, json, res, userController, userService;
+      beforeEach(() => {
+        status = sinon.stub();
+        json = sinon.spy();
+        res = { json, status };
+        status.returns(res);
+        const userRepo = sinon.spy();
+        userService = new UserService(userRepo);
+      });
+      it("should not register a user when name param is not provided", async function() {
+        const req = { body: { email: faker.internet.email() } };
+        await new UserController().register(req, res);
+        expect(status.calledOnce).to.be.true;
+        expect(status.args[0][0]).to.equal(400);
+        expect(json.calledOnce).to.be.true;
+        expect(json.args[0][0].message).to.equal("Invalid Params");
+      });
+      it("should not register a user when name and email params are not provided", async function() {
+        const req = { body: {} };
+        await new UserController().register(req, res);
+        expect(status.calledOnce).to.be.true;
+        expect(status.args[0][0]).to.equal(400);
+        expect(json.calledOnce).to.be.true;
+        expect(json.args[0][0].message).to.equal("Invalid Params");
+      });
+      it("should not register a user when email param is not provided", async function() {
+        const req = { body: { name: faker.name.findName() } };
+        await new UserController().register(req, res);
+        expect(status.calledOnce).to.be.true;
+        expect(status.args[0][0]).to.equal(400);
+        expect(json.calledOnce).to.be.true;
+        expect(json.args[0][0].message).to.equal("Invalid Params");
+      });
+      it("should register a user when email and name params are provided", async function() {
+        const req = {
+          body: { name: faker.name.findName(), email: faker.internet.email() }
+        };
+        const stubValue = {
+          id: faker.random.uuid(),
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.past()
+        };
+        const stub = sinon.stub(userService, "create").returns(stubValue);
+        userController = new UserController(userService);
+        await userController.register(req, res);
+        expect(stub.calledOnce).to.be.true;
+        expect(status.calledOnce).to.be.true;
+        expect(status.args[0][0]).to.equal(201);
+        expect(json.calledOnce).to.be.true;
+        expect(json.args[0][0].data).to.equal(stubValue);
+      });
+    });
+
+      // For the getUser test we mocked on the json method. 
+      // Notice that we also had to use a spy in place UserRepository while creating a new instance of the UserService.
+
+    describe("getUser", function() {
+      let req;
+      let res;
+      let userService;
+      beforeEach(() => {
+        req = { params: { id: faker.random.uuid() } };
+        res = { json: function() {} };
+        const userRepo = sinon.spy();
+        userService = new UserService(userRepo);
+      });
+      it("should return a user that matches the id param", async function() {
+        const stubValue = {
+          id: req.params.id,
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.past()
+        };
+        const mock = sinon.mock(res);
+        mock
+          .expects("json")
+          .once()
+          .withExactArgs({ data: stubValue });
+        const stub = sinon.stub(userService, "getUser").returns(stubValue);
+        userController = new UserController(userService);
+        const user = await userController.getUser(req, res);
+        expect(stub.calledOnce).to.be.true;
+        mock.verify();
+      });
+    });
+
+  });
+  ```
+
+  #### `user.service.test.js`
+  ```
+  const chai = require("chai");
+const sinon = require("sinon");
+const UserRepository = require("../user/user.repository");
+const expect = chai.expect;
+const faker = require("faker");
+const UserService = require("../user/user.service");
+
+// test the UserService class methods 
+
+
+//  test the UserService create method. We have created a stub for the repository create method
+describe("UserService", function() {
+  describe("create", function() {
+    it("should create a new user", async function() {
+      const stubValue = {
+        id: faker.random.uuid(),
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        createdAt: faker.date.past(),
+        updatedAt: faker.date.past()
+      };
+      const userRepo = new UserRepository();
+      const stub = sinon.stub(userRepo, "create").returns(stubValue);
+      const userService = new UserService(userRepo);
+      const user = await userService.create(stubValue.name, stubValue.email);
+      expect(stub.calledOnce).to.be.true;
+      expect(user.id).to.equal(stubValue.id);
+      expect(user.name).to.equal(stubValue.name);
+      expect(user.email).to.equal(stubValue.email);
+      expect(user.createdAt).to.equal(stubValue.createdAt);
+      expect(user.updatedAt).to.equal(stubValue.updatedAt);
+    });
+  });
+});
+
+// test the UserService getUser service method:
+
+describe("UserService", function() {
+    describe("getUser", function() {
+      it("should return a user that matches the provided id", async function() {
+        const stubValue = {
+          id: faker.random.uuid(),
+          name: faker.name.findName(),
+          email: faker.internet.email(),
+          createdAt: faker.date.past(),
+          updatedAt: faker.date.past()
+        };
+        const userRepo = new UserRepository();
+        const stub = sinon.stub(userRepo, "getUser").returns(stubValue); // stubbing the UserRepository getUser 
+        const userService = new UserService(userRepo);
+        const user = await userService.getUser(stubValue.id);
+        //and assert that the stub is called at least once and then assert that the return value of the method is correct.
+        expect(stub.calledOnce).to.be.true; 
+        expect(user.id).to.equal(stubValue.id);
+        expect(user.name).to.equal(stubValue.name);
+        expect(user.email).to.equal(stubValue.email);
+        expect(user.createdAt).to.equal(stubValue.createdAt);
+        expect(user.updatedAt).to.equal(stubValue.updatedAt);
+      });
+    });
+  });
+  ```
+
+  ### Run the tests
+  Now that we have written some unit tests to test our repository, controller, and service methods, we can run them by entering the following command in our project's root directory:
+  
+  `npm test`
+
+  If all goes well, you should see all nine tests pass:
+
+  ```
+    UserController
+    register
+      ✓ should not register a user when name param is not provided
+      ✓ should not register a user when name and email params are not provided
+      ✓ should not register a user when email param is not provided
+      ✓ should register a user when email and name params are provided
+    getUser
+      ✓ should return a user that matches the id param
+
+  UserRepository
+    create
+      ✓ should add a new user to the db (39ms)
+    getUser
+      ✓ should retrieve a user with specific id
+
+  UserService
+    create
+      ✓ should create a new user
+
+  UserService
+    getUser
+      ✓ should return a user that matches the provided id
+
+
+  9 passing (57ms)
+  ```
