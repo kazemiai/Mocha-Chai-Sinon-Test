@@ -274,7 +274,9 @@ app.listen(PORT, () => {
 
 ### 3. Write the unit tests!
 
-We will keep our unit tests organized away from our application code. Create a new folder named `test` in the `src` folder. We will write tests for our User repository, controller, and service. We are not testing our model, so a user entity will be stubbed out using `faker` and any model methods will be stubbed out using  `sinon`.
+We will keep our unit tests organized away from our application code. Create a new folder named `test` in the `src` folder. We will write tests for our User repository, controller, and service. 
+
+Note: We are not testing our model, so entities are stubbed out using `faker` and Model methods are stubbed out using `sinon`. The `describe()` and `it()` methods come from `mocha`'s behavior-driven development (BDD) interface while the `expect()` method comes from the `chai` library and is used to write the actual assertions of these unit test cases for the UserRepository's `create()`  and `getUser()` methods.
 
 #### `user.repository.test.js`
 ```
@@ -334,7 +336,6 @@ describe("UserRepository", function() {
 });
 ```
 
-Note: Model entities are stubbed out using `faker` and Model methods are stubbed out using `sinon`. `chai`'s `expect` method is used to write the actual assertions of these unit test cases for the UserRepository's `create`  and `getUser` methods.
 
 #### `user.controller.test.js`
 ```
@@ -508,8 +509,8 @@ describe("UserService", function() {
   });
   ```
 
-  ### Run the tests
-  Now that we have written some unit tests to test our repository, controller, and service methods, we can run them by entering the following command in our project's root directory:
+  ### 4. Run the tests
+  Now that we have written some unit tests to test our repository, controller, and service methods, we can tell `mocha` to run them by entering the following command in our project's root directory:
   
   `npm test`
 
