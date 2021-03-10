@@ -517,7 +517,7 @@ describe("UserService", function() {
   If all goes well, you should see all nine tests pass:
 
   ```
-    UserController
+  UserController
     register
       ✓ should not register a user when name param is not provided
       ✓ should not register a user when name and email params are not provided
