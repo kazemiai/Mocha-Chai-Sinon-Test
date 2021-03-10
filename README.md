@@ -71,10 +71,142 @@ This installs all the specified modules (and their dependencies) in a newly crea
 
 
 ### 2. Create a simple testable project for demonstration
-Our project will use a design pattern comprised of Models, Services, Controllers, and Respositories:
+Our project will use a design pattern comprised of Models, Repositories, Controllers, and Services:
 
-* **Model**: Represents an object. In our case, we will have one model to represent a User. 
+* **Model**: Represents an object or entity. In our case, we will have one model to represent a User. 
 * **Repository**: Performs database CRUD operations using data defined by one or more Models. For simplicity, our repository will just create and read User data.
 * **Controller**: Contains application logic and returns a response (including status message and data as appropriate) to a Service.
 * **Services**: The middleware between a Controller and Repository. Uses a response from a Controller, and, if successfully validated, will use that response to call upon the Repository to perform the appropriate CRUD operation.
 
+Create a `user` folder in your project's `src` folder. This is where we will put our model, repository, controller, and service files, defined below:
+
+#### `user.model.js`
+
+```
+const Sequelize = require("sequelize");
+const Model = Sequelize.Model;
+class UserModel extends Model {
+  static init(sequelize, DataTypes) {
+    return super.init(
+      {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: DataTypes.INTEGER
+        },
+        name: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        email: {
+          type: DataTypes.STRING
+        }
+      },
+      {
+        sequelize,
+        modelName: "user"
+      }
+    );
+  }
+}
+
+module.exports = UserModel;
+```
+#### `user.repository.js`
+```
+const { UserModel } = require("../database");
+class UserRepository {
+  constructor() {
+    this.user = UserModel;
+    this.user.sync({ force: true });
+  }
+  async create(name, email) {
+    return this.user.create({
+      name,
+      email
+    });
+  }
+  async getUser(id) {
+    return this.user.findOne({ id });
+  }
+}
+module.exports = UserRepository;
+```
+#### `user.controller.js`
+```
+class UserController {
+    constructor(userService) {
+      this.userService = userService;
+    }
+    async register(req, res, next) {
+      const { name, email } = req.body;
+      if (
+        !name ||
+        typeof name !== "string" ||
+        (!email || typeof email !== "string")
+      ) {
+        return res.status(400).json({
+          message: "Invalid Params"
+        });
+      }
+      const user = await this.userService.create(name, email);
+      return res.status(201).json({
+        data: user
+      });
+    }
+    async getUser(req, res) {
+      const { id } = req.params;
+      const user = await this.userService.getUser(id);
+      return res.json({
+        data: user
+      });
+    }
+  }
+  module.exports = UserController;
+  ```
+  #### `user.service.js`
+  ```
+  // The UserService class has two methods create and getUser. 
+  const UserRepository = require("./user.repository");
+  class UserService {
+      constructor(userRepository) {
+      this.userRepository = userRepository;
+    }
+  // The create method calls the create repository method passing name and email of a new user as arguments. 
+  async create(name, email) {
+    return this.userRepository.create(name, email);
+    }
+
+ // The getUser calls the repository getUser method.
+ getUser(id) {
+    return this.userRepository.getUser(id);
+    }
+  }
+  module.exports = UserService;
+```
+
+We will also need to define some basic API routes to test the functionality of our model, repository, controller, and service. We will define these in `user.route.js`. Create this file in our `src/user` path:
+
+#### `user.route.js`
+```
+const express = require("express");
+const router = express.Router();
+const UserController = require("./user.controller");
+const UserRepository = require("./user.repository");
+const UserService = require("./user.service");
+
+const userRepository = new UserRepository();
+const userService = new UserService(userRepository);
+module.exports = {
+  userRepository,
+  userService
+};
+
+const userController = new UserController(userService);
+
+router.post("/user", (req, res) => userController.register(req, res));
+router.get("/user/:id", (req, res) => userController.getUser(req, res));
+
+module.exports = router;
+```
